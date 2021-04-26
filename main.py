@@ -100,6 +100,9 @@ class Field:
         
         return self.cells
     
+    def get_state(self) -> Dict[Tuple[int, int], Cell]:
+        return self.cells
+    
     def display_cli(self) -> None:
         """Prints the current state in the console"""
         for y in range(self.height):
