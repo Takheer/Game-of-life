@@ -13,6 +13,7 @@ field.create_living_cells([
 
 The method `field.generate_next_state()` is used to produce the next state of the game.
 You can create your own visualization for this or just use a builtin method `field.display_cli()`
+If you want to use your own visualization, you can get the current state directly from the `generate_next_state()` or use `get_state()` method
 
 ### Sample usage
 ```
