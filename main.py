@@ -86,7 +86,7 @@ class Field:
             )
         self.create_living_cells(cells)
     
-    def generate_next_state(self) -> None:
+    def generate_next_state(self) -> Dict[Tuple[int, int], Cell]:
         """Returns the next state of the game"""
         next_state: Dict[Tuple[int, int], Cell] = {}
         for x in range(self.width):
@@ -97,6 +97,8 @@ class Field:
                     next_state[x, y] = Cell(x, y)
         
         self.cells = next_state
+        
+        return self.cells
     
     def display_cli(self) -> None:
         """Prints the current state in the console"""
