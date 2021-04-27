@@ -24,15 +24,11 @@ class Field:
     # Though it looks a bit redundant,
     # storing cells as a dict is better for performance of finding a cell's neighbors
     # and generating the next state
-    cells: Dict[Tuple[int, int], Cell] = {}
+    living_cells: Dict[Tuple[int, int], Cell] = {}
     
     def __init__(self, width: int, height: Optional[int] = None):
         self.width = width
         self.height = height or width
-        
-        for x in range(self.width):
-            for y in range(self.height):
-                self.cells[x, y] = Cell(x, y)
     
     def _should_cell_live(self, cell: Cell) -> bool:
         """
@@ -53,16 +49,12 @@ class Field:
         count = 0
         # borders of the area in which we are trying to find neighbors
         # Let's assume y axis directs downside and x axis directs to the left
-        left_border = cell.x if cell.x == 0 else cell.x - 1
-        right_border = cell.x if cell.x == self.width - 1 else cell.x + 1
-        top_border = cell.y if cell.y == 0 else cell.y - 1
-        bottom_border = cell.y if cell.y == self.height - 1 else cell.y + 1
         
-        for x in range(left_border, right_border + 1):
-            for y in range(top_border, bottom_border + 1):
+        for x in range(cell.x - 1, cell.x + 2):
+            for y in range(cell.y - 1, cell.y + 2):
                 if cell.x == x and cell.y == y:
                     continue
-                if self.cells[x, y].is_alive():
+                if (x, y) in self.living_cells.keys():
                     count += 1
         
         return count
@@ -72,7 +64,7 @@ class Field:
         for x, y in living_cells_positions:
             if x not in range(self.width) or y not in range(self.height):
                 raise InvalidInputException(x, y, self.width, self.height)
-            self.cells[x, y].state = CellState.ALIVE
+            self.living_cells[x, y] = Cell(x, y, True)
             
     def randomize(self, count):
         """Creates a game with a random initial state"""
@@ -89,38 +81,48 @@ class Field:
     def generate_next_state(self) -> Dict[Tuple[int, int], Cell]:
         """Returns the next state of the game"""
         next_state: Dict[Tuple[int, int], Cell] = {}
-        for x in range(self.width):
-            for y in range(self.height):
-                if self._should_cell_live(self.cells[x, y]):
-                    next_state[x, y] = Cell(x, y, True)
-                else:
-                    next_state[x, y] = Cell(x, y)
+        for living_cell in self.living_cells.values():
+            for x in range(living_cell.x - 1, living_cell.x + 2):
+                for y in range(living_cell.y - 1, living_cell.y + 2):
+                    cell = Cell(x, y)
+                    if (x, y) in self.living_cells.keys():
+                        cell = self.living_cells[x, y]
+                    if self._should_cell_live(cell):
+                        next_state[x, y] = Cell(x, y, True)
         
-        self.cells = next_state
+        self.living_cells = next_state
         
-        return self.cells
+        return self.living_cells
     
     def get_state(self) -> Dict[Tuple[int, int], Cell]:
-        return self.cells
+        return self.living_cells
     
     def display_cli(self) -> None:
         """Prints the current state in the console"""
         for y in range(self.height):
             chars = ""
             for x in range(self.width):
-                chars += '*' if self.cells[x, y].is_alive() else '.'
+                chars += '*' if (x, y) in self.living_cells.keys() else '.'
             print(chars)
         print()
 
 
 # a simple test script
 if __name__ == '__main__':
-    field = Field(16, 8)
+    field = Field(10, 10)
     field.create_living_cells([
-        (7, 2),
-        (8, 2),
-        (9, 2),
-        (8, 4)
+        (7, 0),
+        (8, 0),
+        (9, 0),
+        (0, 7),
+        (0, 8),
+        (0, 9),
+        (7, 0),
+        (8, 0),
+        (9, 0),
+        (7, 0),
+        (8, 0),
+        (9, 0),
     ])
     field.display_cli()
     time.sleep(1)
